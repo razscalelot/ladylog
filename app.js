@@ -10,7 +10,6 @@ var multer = require('multer');
 var fs = require('fs');
 let mongoose = require("mongoose");
 var expressLayouts = require('express-ejs-layouts');
-var indexRouter = require('./routes/index');
 const helper = require('./utilities/helper');
 var app = express();
 app.set('views', path.join(__dirname, 'views'));
@@ -33,13 +32,22 @@ mongoose.connection.once('open', () => {
 }).on('error', error => {
   console.log("Oops! database connection error:" + error);
 });
-app.use('/', indexRouter);
+
+const adminpaths = [
+  {pathUrl: '/login', routerFile: 'login'},
+  {pathUrl: '/symptoms', routerFile: 'symptoms'},
+]
+adminpaths.forEach((path) => {
+  app.use('/admin'+path.pathUrl, require('./routes/admin/'+path.routerFile));
+});
+
+
 const userpaths = [
   { pathUrl: '/login', routerFile: 'login' },
   { pathUrl: '/profile', routerFile: 'profile' },
   { pathUrl: '/mycycle', routerFile: 'mycycle' },
+  { pathUrl: '/getSymptoms', routerFile: 'getSymptoms' },
 ]
-
 userpaths.forEach((path) => {
   app.use('/user' + path.pathUrl, require('./routes/users/' + path.routerFile));
 })
@@ -49,4 +57,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 module.exports = app;
